@@ -4,18 +4,23 @@
     SPDX-License-Identifier: Apache-2.0
 -->
 <resources>
-    <string name="alert_slider_category_title">警报滑块</string>
-    <string name="alert_slider_selection_dialog_title">操作</string>
+
+    <string name="device_settings_app_name">三段式开关设置</string>
+    <string name="button_panel_title">三段式开关</string>
+    <string name="alert_slider_summary">自定义三段式开关</string>
+
+    <!-- Alert slider -->
+    <string name="alert_slider_category_title">三段式开关</string>
+    <string name="alert_slider_selection_dialog_title">动作</string>
     <string name="alert_slider_top_position">顶部位置</string>
     <string name="alert_slider_middle_position">中间位置</string>
     <string name="alert_slider_bottom_position">底部位置</string>
-    <string name="alert_slider_mode_none">无</string>
     <string name="alert_slider_mode_silent">静音</string>
-    <string name="alert_slider_mode_normal">正常</string>
+    <string name="alert_slider_mode_normal">响铃</string>
     <string name="alert_slider_mode_vibration">振动</string>
-    <string name="alert_slider_mode_dnd_priority_only">仅限优先</string>
-    <string name="alert_slider_mode_dnd_total_silence">完全静音</string>
-    <string name="alert_slider_mode_dnd_alarms_only">仅限闹钟</string>
-    <string name="alert_slider_mute_media_title">静音，包括媒体音量</string>
-    <string name="alert_slider_mute_media_summary">切换静音同时静音媒体</string>
+    <string name="alert_slider_mode_dnd_priority_only">仅优先</string>
+    <string name="alert_slider_mode_dnd_total_silence">完全仅有</string>
+    <string name="alert_slider_mode_dnd_alarms_only">仅闹钟</string>
+    <string name="alert_slider_mute_media_title">媒体静音</string>
+    <string name="alert_slider_mute_media_summary">切换至静音时也静音媒体音量</string>
 </resources>
