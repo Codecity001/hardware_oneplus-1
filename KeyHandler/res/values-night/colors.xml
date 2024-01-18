@@ -11,6 +11,8 @@
     limitations under the License.
 -->
 <resources>
-    <color name="slider_track_color">#FFB0B0B0</color> <!-- Light gray color for dark mode -->
-    <color name="slider_thumb_color">#FFB0B0B0</color> <!-- Black color for the thumb in dark mode -->
+    <!-- Alert Slider -->
+    <color name="alert_slider_notification_background">@android:color/system_accent2_700</color>
+    <color name="slider_track_color">#FF757575</color> <!-- Gray color for the track -->
+    <color name="slider_thumb_color">#FF757575</color> <!-- White color for the thumb -->
 </resources>
