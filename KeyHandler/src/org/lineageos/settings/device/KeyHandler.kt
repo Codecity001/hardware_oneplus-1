@@ -17,13 +17,14 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.provider.Settings
+import android.os.UserHandle
 import android.view.KeyEvent
 import com.android.internal.os.DeviceKeyHandler
 
 import java.io.File
 import java.util.concurrent.Executors
 
-class KeyHandler(context: Context) : DeviceKeyHandler {
+class KeyHandler(private val context: Context) : DeviceKeyHandler {
     private val audioManager = context.getSystemService(AudioManager::class.java)!!
     private val notificationManager = context.getSystemService(NotificationManager::class.java)!!
     private val vibrator = context.getSystemService(Vibrator::class.java)!!
@@ -50,22 +51,7 @@ class KeyHandler(context: Context) : DeviceKeyHandler {
         }
     }
 
-    constructor(context: Context) : this() {
-        audioManager = context.getSystemService(AudioManager::class.java)!!
-        notificationManager = context.getSystemService(NotificationManager::class.java)!!
-
-        // Update to use VibratorManager for compatibility
-        val vibratorManager = context.getSystemService(VibratorManager::class.java)
-        vibrator = vibratorManager?.defaultVibrator ?: context.getSystemService(Vibrator::class.java)!!
-
-        packageContext = context.createPackageContext(
-            KeyHandler::class.java.packageName, 0
-        )
-        sharedPreferences = packageContext.getSharedPreferences(
-            packageContext.packageName + "_preferences",
-            Context.MODE_PRIVATE or Context.MODE_MULTI_PROCESS
-        )
-
+    init {
         context.registerReceiver(
             broadcastReceiver,
             IntentFilter(AudioManager.STREAM_MUTE_CHANGED_ACTION)
@@ -150,7 +136,7 @@ class KeyHandler(context: Context) : DeviceKeyHandler {
             putExtra("position", position)
             putExtra("mode", mode)
         }
-        packageContext.sendBroadcast(intent)
+        context.sendBroadcastAsUser(intent, UserHandle(UserHandle.USER_CURRENT))
     }
 
     override fun onPocketStateChanged(inPocket: Boolean) {
@@ -171,11 +157,11 @@ class KeyHandler(context: Context) : DeviceKeyHandler {
         private const val TAG = "KeyHandler"
 
         // Slider key positions
-        const val POSITION_TOP = 1
-        const val POSITION_MIDDLE = 2
-        const val POSITION_BOTTOM = 3
+        public const val POSITION_TOP = 1
+        public const val POSITION_MIDDLE = 2
+        public const val POSITION_BOTTOM = 3
 
-        const val SLIDER_UPDATE_ACTION = "org.lineageos.settings.device.UPDATE_SLIDER"
+        public const val SLIDER_UPDATE_ACTION = "org.lineageos.settings.device.UPDATE_SLIDER"
 
         // Preference keys
         private const val ALERT_SLIDER_TOP_KEY = "config_top_position"
@@ -188,6 +174,13 @@ class KeyHandler(context: Context) : DeviceKeyHandler {
         private const val ZEN_PRIORITY_ONLY = 3
         private const val ZEN_TOTAL_SILENCE = 4
         private const val ZEN_ALARMS_ONLY = 5
+
+        public const val KEY_VALUE_TOTAL_SILENCE = 0
+        public const val KEY_VALUE_SILENT = 1
+        public const val KEY_VALUE_PRIORTY_ONLY = 2
+        public const val KEY_VALUE_VIBRATE = 3
+        public const val KEY_VALUE_NORMAL = 4
+
 
         // Vibration attributes
         private val HARDWARE_FEEDBACK_VIBRATION_ATTRIBUTES =
