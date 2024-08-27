@@ -21,19 +21,13 @@ import com.android.internal.os.DeviceKeyHandler
 import java.io.File
 import java.util.concurrent.Executors
 
-class KeyHandler(context: Context) : DeviceKeyHandler {
-    private val audioManager = context.getSystemService(AudioManager::class.java)!!
-    private val notificationManager = context.getSystemService(NotificationManager::class.java)!!
-    private val vibrator = context.getSystemService(Vibrator::class.java)!!
+class KeyHandler : DeviceKeyHandler {
 
-    private val packageContext =
-        context.createPackageContext(KeyHandler::class.java.getPackage()!!.name, 0)
-    private val sharedPreferences
-        get() =
-            packageContext.getSharedPreferences(
-                packageContext.packageName + "_preferences",
-                Context.MODE_PRIVATE or Context.MODE_MULTI_PROCESS,
-            )
+    private lateinit var audioManager: AudioManager
+    private lateinit var notificationManager: NotificationManager
+    private lateinit var vibrator: Vibrator
+    private lateinit var packageContext: Context
+    private lateinit var sharedPreferences: android.content.SharedPreferences
 
     private val executorService = Executors.newSingleThreadExecutor()
 
@@ -56,7 +50,19 @@ class KeyHandler(context: Context) : DeviceKeyHandler {
             }
         }
 
-    init {
+    constructor(context: Context) : this() {
+        audioManager = context.getSystemService(AudioManager::class.java)!!
+        notificationManager = context.getSystemService(NotificationManager::class.java)!!
+        vibrator = context.getSystemService(Vibrator::class.java)!!
+
+        packageContext = context.createPackageContext(
+            KeyHandler::class.java.getPackage()!!.name, 0
+        )
+        sharedPreferences = packageContext.getSharedPreferences(
+            packageContext.packageName + "_preferences",
+            Context.MODE_PRIVATE or Context.MODE_MULTI_PROCESS
+        )
+
         context.registerReceiver(
             broadcastReceiver,
             IntentFilter().apply {
@@ -65,6 +71,8 @@ class KeyHandler(context: Context) : DeviceKeyHandler {
             },
         )
     }
+
+    constructor()
 
     override fun handleKeyEvent(event: KeyEvent): KeyEvent? {
         if (event.action != KeyEvent.ACTION_DOWN) {
