@@ -12,12 +12,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
 import android.media.AudioSystem
+import android.os.UserHandle
 import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.os.VibratorManager
 import android.provider.Settings
-import android.os.UserHandle
 import android.view.KeyEvent
 import com.android.internal.os.DeviceKeyHandler
 import java.io.File
@@ -28,14 +27,14 @@ class KeyHandler(private val context: Context) : DeviceKeyHandler {
     private val notificationManager = context.getSystemService(NotificationManager::class.java)!!
     private val vibrator = context.getSystemService(Vibrator::class.java)!!
 
-    private val packageContext = context.createPackageContext(
-        KeyHandler::class.java.getPackage()!!.name, 0
-    )
+    private val packageContext =
+        context.createPackageContext(KeyHandler::class.java.getPackage()!!.name, 0)
     private val sharedPreferences
-        get() = packageContext.getSharedPreferences(
-            packageContext.packageName + "_preferences",
-            Context.MODE_PRIVATE or Context.MODE_MULTI_PROCESS
-        )
+        get() =
+            packageContext.getSharedPreferences(
+                packageContext.packageName + "_preferences",
+                Context.MODE_PRIVATE or Context.MODE_MULTI_PROCESS
+            )
 
     private val executorService = Executors.newSingleThreadExecutor()
 
@@ -75,21 +74,16 @@ class KeyHandler(private val context: Context) : DeviceKeyHandler {
 
         val deviceName = event.device.name
 
-        if (deviceName != "oplus,hall_tri_state_key" && deviceName != "oplus,tri-state-key") {
+        if (
+            deviceName != "oplus,hall_tri_state_key" &&
+                deviceName != "oplus,tri-state-key"
+        ) {
             return event
         }
 
         populateKeyState(true)
 
         return null
-    }
-
-    private fun populateKeyState(vibrate: Boolean) {
-        when (File("/proc/tristatekey/tri_state").readText().trim()) {
-            "1" -> handleMode(POSITION_TOP, vibrate)
-            "2" -> handleMode(POSITION_MIDDLE, vibrate)
-            "3" -> handleMode(POSITION_BOTTOM, vibrate)
-        }
     }
 
     private fun vibrateIfNeeded(mode: Int) {
@@ -148,10 +142,11 @@ class KeyHandler(private val context: Context) : DeviceKeyHandler {
     }
 
     private fun sendNotification(position: Int, mode: Int) {
-        val intent = Intent(SLIDER_UPDATE_ACTION).apply {
-            putExtra("position", position)
-            putExtra("mode", mode)
-        }
+        val intent =
+            Intent(SLIDER_UPDATE_ACTION).apply {
+                putExtra("position", position)
+                putExtra("mode", mode)
+            }
         context.sendBroadcastAsUser(intent, UserHandle(UserHandle.USER_CURRENT))
     }
 
