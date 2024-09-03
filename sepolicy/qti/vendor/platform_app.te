@@ -1,3 +1,0 @@
-# Dolby
-dontaudit platform_app hal_dms_hwservice:hwservice_manager find;
-get_prop(platform_app, audio_config_prop)
