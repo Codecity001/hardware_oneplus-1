@@ -57,9 +57,6 @@
         string that's stored in 8-bit unpacked format) characters.-->
     <bool translatable="false" name="config_sms_decode_gsm_8bit_data">true</bool>
 
-    <!-- Flag indicating if the speed up audio on mt call code should be executed -->
-    <bool name="config_speed_up_audio_on_mt_calls">true</bool>
-
     <!-- set to false if we need to show user confirmation
          when alpha identifier is not provided by the UICC -->
     <bool name="config_stkNoAlphaUsrCnf">false</bool>
