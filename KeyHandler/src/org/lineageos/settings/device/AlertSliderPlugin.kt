@@ -81,7 +81,7 @@ class AlertSliderPlugin : OverlayPlugin {
         pluginContext.unregisterReceiver(updateReceiver)
     }
 
-    override fun setup(statusBar: View, navBar: View) {}
+    override fun setup(statusBar: View, navBar: View?) {}
 
     private inner class NotificationHandler(private val context: Context) :
         Handler(Looper.getMainLooper()) {
