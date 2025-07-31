@@ -31,6 +31,11 @@
         android:entryValues="@array/alert_slider_action_entry_values"
         android:defaultValue="2" />
 
+    <SwitchPreferenceCompat
+        android:key="config_zen_keep"
+        android:title="@string/alert_slider_zen_keep_title"
+        android:summary="@string/alert_slider_zen_keep_summary"
+        android:defaultValue="false" />
 
     <SwitchPreferenceCompat
         android:key="config_mute_media"
@@ -44,4 +49,10 @@
         android:summary="@string/alert_slider_dialog_summary"
         android:defaultValue="true" />
 
+    <SwitchPreferenceCompat
+        android:key="config_slider_doze_enabled"
+        android:title="@string/alert_slider_doze_enabled_title"
+        android:summary="@string/alert_slider_doze_enabled_summary"
+        android:defaultValue="true"
+        android:dependency="config_slider_dialog" />
 </PreferenceScreen>
