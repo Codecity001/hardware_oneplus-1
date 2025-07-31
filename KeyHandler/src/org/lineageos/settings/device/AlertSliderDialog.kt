@@ -185,7 +185,7 @@ class AlertSliderDialog(private var context: Context) :
             ?: run { iconView!!.setImageResource(R.drawable.ic_info) }
 
         sTextResMap.get(ringerMode)?.let { textView!!.setText(it) }
-            ?: run { textView!!.setText(R.string.alert_slider_mode_none) }
+            ?: run { textView!!.setText(R.string.alert_slider_mode_normal) }
     }
 
     private fun applyOnEnd(endX: Int, endY: Int, position: Int) {
@@ -262,22 +262,20 @@ class AlertSliderDialog(private var context: Context) :
 
         private val sIconResMap =
             hashMapOf(
-                AudioManager.RINGER_MODE_SILENT to R.drawable.ic_volume_ringer_mute,
-                AudioManager.RINGER_MODE_VIBRATE to R.drawable.ic_volume_ringer_vibrate,
-                AudioManager.RINGER_MODE_NORMAL to R.drawable.ic_volume_ringer,
-                KeyHandler.ZEN_PRIORITY_ONLY to R.drawable.ic_notifications_alert,
-                KeyHandler.ZEN_TOTAL_SILENCE to R.drawable.ic_notifications_silence,
-                KeyHandler.ZEN_ALARMS_ONLY to R.drawable.ic_alarm
+                KeyHandler.KEY_VALUE_SILENT to R.drawable.ic_volume_ringer_mute,
+                KeyHandler.KEY_VALUE_VIBRATE to R.drawable.ic_volume_ringer_vibrate,
+                KeyHandler.KEY_VALUE_NORMAL to R.drawable.ic_volume_ringer,
+                KeyHandler.KEY_VALUE_PRIORITY_ONLY to R.drawable.ic_notifications_alert,
+                KeyHandler.KEY_VALUE_TOTAL_SILENCE to R.drawable.ic_notifications_silence
             )
 
         private val sTextResMap =
             hashMapOf(
-                AudioManager.RINGER_MODE_SILENT to R.string.alert_slider_mode_silent,
-                AudioManager.RINGER_MODE_VIBRATE to R.string.alert_slider_mode_vibration,
-                AudioManager.RINGER_MODE_NORMAL to R.string.alert_slider_mode_normal,
-                KeyHandler.ZEN_PRIORITY_ONLY to R.string.alert_slider_mode_dnd_priority_only,
-                KeyHandler.ZEN_TOTAL_SILENCE to R.string.alert_slider_mode_dnd_total_silence,
-                KeyHandler.ZEN_ALARMS_ONLY to R.string.alert_slider_mode_dnd_alarms_only
+                KeyHandler.KEY_VALUE_SILENT to R.string.alert_slider_mode_silent,
+                KeyHandler.KEY_VALUE_VIBRATE to R.string.alert_slider_mode_vibration,
+                KeyHandler.KEY_VALUE_NORMAL to R.string.alert_slider_mode_normal,
+                KeyHandler.KEY_VALUE_PRIORITY_ONLY to R.string.alert_slider_mode_dnd_priority_only,
+                KeyHandler.KEY_VALUE_TOTAL_SILENCE to R.string.alert_slider_mode_dnd_total_silence
             )
     }
 }
