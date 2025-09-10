@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2025 The LineageOS Project
+ * Copyright (C) 2021-2023 The LineageOS Project
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -41,18 +41,10 @@ class KeyHandler(context: Context) : DeviceKeyHandler {
     private var wasMuted = false
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            when (intent.action) {
-                AudioManager.STREAM_MUTE_CHANGED_ACTION -> {
-                    val stream = intent.getIntExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE, -1)
-                    val state = intent.getBooleanExtra(
-                        AudioManager.EXTRA_STREAM_VOLUME_MUTED, false
-                    )
-                    if (stream == AudioSystem.STREAM_MUSIC && !state) {
-                        wasMuted = false
-                    }
-                }
-
-                Intent.ACTION_BOOT_COMPLETED -> populateKeyState(false)
+            val stream = intent.getIntExtra(AudioManager.EXTRA_VOLUME_STREAM_TYPE, -1)
+            val state = intent.getBooleanExtra(AudioManager.EXTRA_STREAM_VOLUME_MUTED, false)
+            if (stream == AudioSystem.STREAM_MUSIC && !state) {
+                wasMuted = false
             }
         }
     }
@@ -60,10 +52,7 @@ class KeyHandler(context: Context) : DeviceKeyHandler {
     init {
         context.registerReceiver(
             broadcastReceiver,
-            IntentFilter().apply {
-                addAction(AudioManager.STREAM_MUTE_CHANGED_ACTION)
-                addAction(Intent.ACTION_BOOT_COMPLETED)
-            }
+            IntentFilter(AudioManager.STREAM_MUTE_CHANGED_ACTION)
         )
     }
 
@@ -78,17 +67,13 @@ class KeyHandler(context: Context) : DeviceKeyHandler {
             return event
         }
 
-        populateKeyState(true)
+        when (File("/proc/tristatekey/tri_state").readText().trim()) {
+            "1" -> handleMode(POSITION_TOP)
+            "2" -> handleMode(POSITION_MIDDLE)
+            "3" -> handleMode(POSITION_BOTTOM)
+        }
 
         return null
-    }
-
-    private fun populateKeyState(vibrate: Boolean) {
-        when (File("/proc/tristatekey/tri_state").readText().trim()) {
-            "1" -> handleMode(POSITION_TOP, vibrate)
-            "2" -> handleMode(POSITION_MIDDLE, vibrate)
-            "3" -> handleMode(POSITION_BOTTOM, vibrate)
-        }
     }
 
     private fun vibrateIfNeeded(mode: Int) {
@@ -104,7 +89,7 @@ class KeyHandler(context: Context) : DeviceKeyHandler {
         }
     }
 
-    private fun handleMode(position: Int, vibrate: Boolean) {
+    private fun handleMode(position: Int) {
         val muteMedia = sharedPreferences.getBoolean(MUTE_MEDIA_WITH_SILENT, false)
 
         val mode = when (position) {
@@ -139,10 +124,7 @@ class KeyHandler(context: Context) : DeviceKeyHandler {
                     }
                 }
             }
-
-            if (vibrate) {
-                vibrateIfNeeded(mode)
-            }
+            vibrateIfNeeded(mode)
         }
     }
 
