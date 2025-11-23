@@ -8,10 +8,10 @@ package org.lineageos.settings.esimswitcher
 import android.app.AlertDialog
 import android.os.Bundle
 import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import com.android.settingslib.widget.SettingsBasePreferenceFragment
 
-class EsimSettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChangeListener {
+class EsimSettingsFragment : SettingsBasePreferenceFragment(), Preference.OnPreferenceChangeListener {
     private lateinit var controller: EsimController
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
