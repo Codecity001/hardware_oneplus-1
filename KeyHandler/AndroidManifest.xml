@@ -47,6 +47,7 @@
         <activity
             android:name=".ButtonSettingsActivity"
             android:label="@string/alert_slider_category_title"
+            android:theme="@style/Theme.SubSettingsBase.Expressive"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.android.settings.action.IA_SETTINGS" />

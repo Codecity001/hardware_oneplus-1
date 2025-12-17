@@ -5,13 +5,16 @@
 
 package org.lineageos.settings.device
 
+import android.content.Context
 import android.os.Bundle
+import android.os.Looper
+import android.view.View
 import android.provider.Settings
 import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import com.android.settingslib.widget.SettingsBasePreferenceFragment
 
-class ButtonSettingsFragment : PreferenceFragmentCompat(), Preference.OnPreferenceChangeListener {
+class ButtonSettingsFragment : SettingsBasePreferenceFragment(), Preference.OnPreferenceChangeListener {
     private lateinit var sliderDozeSwitch: SwitchPreferenceCompat
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
