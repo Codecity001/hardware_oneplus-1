@@ -9,11 +9,7 @@ android_app {
 
     libs: ["SystemUIPluginLib"],
     static_libs: [
-        "SettingsLib",
-        "androidx.core_core",
-        "androidx.preference_preference",
         "org.lineageos.settings.resources",
-        "com.google.android.material_material",
     ],
 
     optimize: {

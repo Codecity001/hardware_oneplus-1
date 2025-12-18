@@ -16,6 +16,11 @@ class ButtonSettingsActivity : CollapsingToolbarBaseActivity() {
             .replace(
                 com.android.settingslib.collapsingtoolbar.R.id.content_frame,
                 ButtonSettingsFragment(),
+                TAG
             ).commit()
+    }
+
+    companion object {
+        private const val TAG = "ButtonSettingsActivity"
     }
 }
