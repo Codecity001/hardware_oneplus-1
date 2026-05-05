@@ -47,7 +47,7 @@
             android:layout_gravity="center_vertical"
             android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
             android:gravity="center_vertical"
-            android:textColor="?android:attr/textColorPrimary"
+            android:textColor="@color/alert_slider_text_color"
             android:autoSizeTextType="uniform"
             android:autoSizeMinTextSize="8sp"
             android:autoSizeMaxTextSize="@dimen/alert_slider_text_size"

@@ -16,7 +16,6 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.ColorDrawable
-import android.media.AudioManager
 import android.view.Gravity
 import android.view.Surface
 import android.view.ViewGroup
@@ -28,16 +27,20 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 /** View with some logging to show that its being run. */
-class AlertSliderDialog(private var context: Context) :
+class AlertSliderDialog(private val context: Context) :
     Dialog(context, R.style.alert_slider_theme) {
-    private val dialogView by lazy { findViewById<LinearLayout>(R.id.alert_slider_dialog) }
-    private val frameView by lazy { findViewById<ViewGroup>(R.id.alert_slider_view) }
-    private val iconView by lazy { findViewById<ImageView>(R.id.alert_slider_icon) }
-    private val textView by lazy { findViewById<TextView>(R.id.alert_slider_text) }
+    
+    // Applying the !! inside the lazy block makes these non-nullable below
+    private val dialogView by lazy { findViewById<LinearLayout>(R.id.alert_slider_dialog)!! }
+    private val frameView by lazy { findViewById<ViewGroup>(R.id.alert_slider_view)!! }
+    private val iconView by lazy { findViewById<ImageView>(R.id.alert_slider_icon)!! }
+    private val textView by lazy { findViewById<TextView>(R.id.alert_slider_text)!! }
 
-    private val rotation: Int = context.getDisplay().getRotation()
-    private val isLand: Boolean = rotation != Surface.ROTATION_0
+    private val rotation: Int = context.display.rotation
+    // Fixed landscape detection to ignore reverse portrait (ROTATION_180)
+    private val isLand: Boolean = rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270
     private val isLeft = context.resources.getBoolean(R.bool.alert_slider_dialog_left)
+    
     private val length: Int
     private val xPos: Int
     private val yPos: Int
@@ -46,8 +49,8 @@ class AlertSliderDialog(private var context: Context) :
     private var animator = ValueAnimator()
 
     init {
-        // window init
-        getWindow()?.let {
+        // window init using property access
+        window?.let {
             it.requestFeature(Window.FEATURE_NO_TITLE)
             it.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             it.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
@@ -77,10 +80,12 @@ class AlertSliderDialog(private var context: Context) :
         val fraction = context.resources.getFraction(R.fraction.alert_slider_dialog_y, 1, 1)
         val widthPixels = context.resources.displayMetrics.widthPixels
         val heightPixels = context.resources.displayMetrics.heightPixels
-        val pads = dialogView!!.paddingTop * 2 // equal paddings in all 4 directions
+        val pads = dialogView.paddingTop * 2 // equal paddings in all 4 directions
+        
         length =
             if (isLand) context.resources.getDimension(R.dimen.alert_slider_dialog_width).toInt()
             else context.resources.getDimension(R.dimen.alert_slider_dialog_height).toInt()
+            
         val hv = (length + pads) * 0.5
 
         xPos =
@@ -90,7 +95,7 @@ class AlertSliderDialog(private var context: Context) :
             if (isLand) (if (isLeft) (widthPixels / 100) else 0)
             else (heightPixels * fraction - hv).toInt()
 
-        getWindow()?.let {
+        window?.let {
             it.attributes =
                 it.attributes.apply {
                     gravity =
@@ -124,10 +129,12 @@ class AlertSliderDialog(private var context: Context) :
                     KeyHandler.POSITION_BOTTOM -> 1
                     else -> 0 // KeyHandler.POSITION_MIDDLE
                 }
+                
         var endX = xPos
         var endY = yPos
         if (isLand) endX += delta else endY += delta
-        if (isShowing()) {
+        
+        if (isShowing) { // using property access
             animatePosition(endX, endY, position, ringerMode)
         } else {
             applyOnStart(ringerMode)
@@ -138,28 +145,29 @@ class AlertSliderDialog(private var context: Context) :
     @Synchronized
     private fun animatePosition(endX: Int, endY: Int, position: Int, ringerMode: Int) {
         if (isAnimating) animator.cancel()
+        
         animator = ValueAnimator()
-        animator.setDuration(100)
-        animator.setInterpolator(OvershootInterpolator())
-        getWindow()?.let {
+        animator.duration = 100
+        animator.interpolator = OvershootInterpolator()
+        
+        window?.let {
             animator.setValues(
                 PropertyValuesHolder.ofInt("x", it.attributes.x, endX),
                 PropertyValuesHolder.ofInt("y", it.attributes.y, endY)
             )
         }
-        animator.addUpdateListener(
-            object : ValueAnimator.AnimatorUpdateListener {
-                override fun onAnimationUpdate(animation: ValueAnimator) {
-                    getWindow()?.let {
-                        it.attributes =
-                            it.attributes.apply {
-                                x = animation.getAnimatedValue("x") as Int
-                                y = animation.getAnimatedValue("y") as Int
-                            }
+        
+        // Converted to concise lambda syntax
+        animator.addUpdateListener { animation ->
+            window?.let {
+                it.attributes =
+                    it.attributes.apply {
+                        x = animation.getAnimatedValue("x") as Int
+                        y = animation.getAnimatedValue("y") as Int
                     }
-                }
             }
-        )
+        }
+        
         animator.addListener(
             object : Animator.AnimatorListener {
                 override fun onAnimationStart(animation: Animator) {
@@ -181,32 +189,38 @@ class AlertSliderDialog(private var context: Context) :
     }
 
     private fun applyOnStart(ringerMode: Int) {
-        sIconResMap.get(ringerMode)?.let { iconView!!.setImageResource(it) }
-            ?: run { iconView!!.setImageResource(R.drawable.ic_info) }
+        // Replaced Map with when expression
+        iconView.setImageResource(
+            when (ringerMode) {
+                KeyHandler.KEY_VALUE_SILENT -> R.drawable.ic_volume_ringer_mute
+                KeyHandler.KEY_VALUE_VIBRATE -> R.drawable.ic_volume_ringer_vibrate
+                KeyHandler.KEY_VALUE_NORMAL -> R.drawable.ic_volume_ringer
+                KeyHandler.KEY_VALUE_PRIORITY_ONLY -> R.drawable.ic_notifications_alert
+                KeyHandler.KEY_VALUE_TOTAL_SILENCE -> R.drawable.ic_notifications_silence
+                else -> R.drawable.ic_info
+            }
+        )
 
-        sTextResMap.get(ringerMode)?.let { textView!!.setText(it) }
-            ?: run { textView!!.setText(R.string.alert_slider_mode_normal) }
+        // Replaced Map with when expression
+        textView.setText(
+            when (ringerMode) {
+                KeyHandler.KEY_VALUE_SILENT -> R.string.alert_slider_mode_silent
+                KeyHandler.KEY_VALUE_VIBRATE -> R.string.alert_slider_mode_vibration
+                KeyHandler.KEY_VALUE_NORMAL -> R.string.alert_slider_mode_normal
+                KeyHandler.KEY_VALUE_PRIORITY_ONLY -> R.string.alert_slider_mode_dnd_priority_only
+                KeyHandler.KEY_VALUE_TOTAL_SILENCE -> R.string.alert_slider_mode_dnd_total_silence
+                else -> R.string.alert_slider_mode_normal
+            }
+        )
+        
+        // Enforcing text color
+        textView.setTextColor(context.getColor(R.color.alert_slider_text_color))
     }
 
     private fun applyOnEnd(endX: Int, endY: Int, position: Int) {
-        if (isLeft) {
-            frameView!!.setBackgroundResource(
-                when (rotation) {
-                    Surface.ROTATION_90 -> sBackgroundResMapLeft90.get(position)!!
-                    Surface.ROTATION_270 -> sBackgroundResMapLeft270.get(position)!!
-                    else -> sBackgroundResMapLeft.get(position)!! // Surface.ROTATION_0
-                }
-            )
-        } else {
-            frameView!!.setBackgroundResource(
-                when (rotation) {
-                    Surface.ROTATION_90 -> sBackgroundResMap90.get(position)!!
-                    Surface.ROTATION_270 -> sBackgroundResMap270.get(position)!!
-                    else -> sBackgroundResMap.get(position)!! // Surface.ROTATION_0
-                }
-            )
-        }
-        getWindow()?.let {
+        frameView.setBackgroundResource(backgroundFor(rotation, position, isLeft))
+        
+        window?.let {
             it.attributes =
                 it.attributes.apply {
                     x = endX
@@ -215,67 +229,45 @@ class AlertSliderDialog(private var context: Context) :
         }
     }
 
+    private fun backgroundFor(rotation: Int, position: Int, flip: Boolean): Int {
+        fun base(position: Int): Int =
+            when (position) {
+                KeyHandler.POSITION_TOP ->
+                    if (flip) R.drawable.alert_slider_top_flip else R.drawable.alert_slider_top
+                KeyHandler.POSITION_MIDDLE -> R.drawable.alert_slider_middle
+                KeyHandler.POSITION_BOTTOM ->
+                    if (flip) R.drawable.alert_slider_bottom_flip
+                    else R.drawable.alert_slider_bottom
+                else -> R.drawable.alert_slider_middle
+            }
+
+        return when (rotation) {
+            Surface.ROTATION_90 ->
+                when (position) {
+                    KeyHandler.POSITION_TOP ->
+                        if (flip) R.drawable.alert_slider_top_90_flip
+                        else R.drawable.alert_slider_top_90
+                    KeyHandler.POSITION_BOTTOM ->
+                        if (flip) R.drawable.alert_slider_bottom_90_flip
+                        else R.drawable.alert_slider_bottom_90
+                    else -> R.drawable.alert_slider_middle
+                }
+            Surface.ROTATION_270 ->
+                when (position) {
+                    KeyHandler.POSITION_TOP ->
+                        if (flip) R.drawable.alert_slider_top_270_flip
+                        else R.drawable.alert_slider_top_270
+                    KeyHandler.POSITION_BOTTOM ->
+                        if (flip) R.drawable.alert_slider_bottom_270_flip
+                        else R.drawable.alert_slider_bottom_270
+                    else -> R.drawable.alert_slider_middle
+                }
+            else -> base(position) // ROTATION_0 / ROTATION_180
+        }
+    }
+
     companion object {
         private const val TAG = "AlertSliderDialog"
-
-        private val sBackgroundResMap =
-            hashMapOf(
-                KeyHandler.POSITION_TOP to R.drawable.alert_slider_top,
-                KeyHandler.POSITION_MIDDLE to R.drawable.alert_slider_middle,
-                KeyHandler.POSITION_BOTTOM to R.drawable.alert_slider_bottom
-            )
-
-        private val sBackgroundResMapLeft =
-            hashMapOf(
-                KeyHandler.POSITION_TOP to R.drawable.alert_slider_top_270,
-                KeyHandler.POSITION_MIDDLE to R.drawable.alert_slider_middle,
-                KeyHandler.POSITION_BOTTOM to R.drawable.alert_slider_bottom_90
-            )
-
-        private val sBackgroundResMap90 =
-            hashMapOf(
-                KeyHandler.POSITION_TOP to R.drawable.alert_slider_top_90,
-                KeyHandler.POSITION_MIDDLE to R.drawable.alert_slider_middle,
-                KeyHandler.POSITION_BOTTOM to R.drawable.alert_slider_bottom_90
-            )
-
-        private val sBackgroundResMapLeft90 =
-            hashMapOf(
-                KeyHandler.POSITION_TOP to R.drawable.alert_slider_bottom_270,
-                KeyHandler.POSITION_MIDDLE to R.drawable.alert_slider_middle,
-                KeyHandler.POSITION_BOTTOM to R.drawable.alert_slider_top_270
-            )
-
-        private val sBackgroundResMap270 =
-            hashMapOf(
-                KeyHandler.POSITION_TOP to R.drawable.alert_slider_top_270,
-                KeyHandler.POSITION_MIDDLE to R.drawable.alert_slider_middle,
-                KeyHandler.POSITION_BOTTOM to R.drawable.alert_slider_bottom_270
-            )
-
-        private val sBackgroundResMapLeft270 =
-            hashMapOf(
-                KeyHandler.POSITION_TOP to R.drawable.alert_slider_bottom_90,
-                KeyHandler.POSITION_MIDDLE to R.drawable.alert_slider_middle,
-                KeyHandler.POSITION_BOTTOM to R.drawable.alert_slider_top_90
-            )
-
-        private val sIconResMap =
-            hashMapOf(
-                KeyHandler.KEY_VALUE_SILENT to R.drawable.ic_volume_ringer_mute,
-                KeyHandler.KEY_VALUE_VIBRATE to R.drawable.ic_volume_ringer_vibrate,
-                KeyHandler.KEY_VALUE_NORMAL to R.drawable.ic_volume_ringer,
-                KeyHandler.KEY_VALUE_PRIORITY_ONLY to R.drawable.ic_notifications_alert,
-                KeyHandler.KEY_VALUE_TOTAL_SILENCE to R.drawable.ic_notifications_silence
-            )
-
-        private val sTextResMap =
-            hashMapOf(
-                KeyHandler.KEY_VALUE_SILENT to R.string.alert_slider_mode_silent,
-                KeyHandler.KEY_VALUE_VIBRATE to R.string.alert_slider_mode_vibration,
-                KeyHandler.KEY_VALUE_NORMAL to R.string.alert_slider_mode_normal,
-                KeyHandler.KEY_VALUE_PRIORITY_ONLY to R.string.alert_slider_mode_dnd_priority_only,
-                KeyHandler.KEY_VALUE_TOTAL_SILENCE to R.string.alert_slider_mode_dnd_total_silence
-            )
+        // Maps removed to optimize memory and class loading speed
     }
 }
